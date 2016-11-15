@@ -1,0 +1,20 @@
+{
+  "name": "tweets",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-console": "^2.0.0",
+    "purescript-strings": "^2.0.2",
+    "purescript-aff": "^2.0.1",
+    "purescript-tuples": "^3.0.0",
+    "purescript-foldable-traversable": "^2.0.0",
+    "purescript-parallel": "^2.1.0"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^2.0.0"
+  }
+}
