@@ -1,0 +1,21 @@
+{
+  "name": "async",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-console": "^2.0.0",
+    "purescript-aff": "^2.0.1",
+    "purescript-now": "^2.0.0",
+    "purescript-datetime": "^2.0.0",
+    "purescript-st": "^2.0.0",
+    "purescript-aff-free": "^3.0.0",
+    "purescript-fork": "^1.0.0"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^2.0.0"
+  }
+}
