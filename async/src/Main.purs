@@ -1,20 +1,13 @@
 module Main where
 
-import Prelude
-import Control.Monad.Aff
-import Control.Monad.ST
-import Control.Monad.Aff.AVar
-import Data.Monoid (mempty)
-import Data.Maybe
-import Data.Either
-import Control.Parallel (sequential, parallel)
-import Control.Monad.Eff.Class (liftEff)
+import Prelude (pure, join, bind, (<*>), (<$>), ($), (<>))
+import Control.Monad.Aff (launchAff, later', Canceler, Aff)
+import Control.Monad.Aff.AVar (AVAR)
 import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Console (CONSOLE, log)
-import Control.Monad.Eff.Now
-import Data.DateTime.Instant (unInstant)
-import Data.Time.Duration
-import Control.Monad.Aff.Promise (defer, wait)
+import Control.Monad.Eff.Exception (EXCEPTION)
+import Control.Monad.Aff.Future (defer', wait)
 
 type A = String
 type B = String
@@ -22,7 +15,7 @@ type C = String
 type D = String
 type E = String
 
-type AffConsole e a = Aff (console :: CONSOLE, now :: NOW | e) a
+type AffConsole e a = Aff (console :: CONSOLE | e) a
 
 getA :: forall e. String -> AffConsole e A
 getA a = do
@@ -38,8 +31,8 @@ getB b = do
   liftEff $ log "finish getB"
   pure b
 
-getCWithAB :: forall e. A -> B -> A -> AffConsole e C
-getCWithAB a b c = do
+getCWithAB :: forall e. A -> B -> AffConsole e C
+getCWithAB a b = do
   liftEff $ log "getCWithAB"
   c <- later' 1000 $ pure $ a <> b <> "C"
   liftEff $ log "finish getCWithAB"
@@ -91,14 +84,13 @@ getEWithCD c d = do
 -- ABCBDE
 -- ```
 
-main = launchAff do
-  aA <- defer $ getA "a"
-  bA <- defer $ getB "b"
-
-  let cAA = sequential $ getCWithAB <$> parallel (wait aA) <*> parallel (wait bA) <*> parallel (wait aA)
-  let dA = wait bA >>= getDWithB
-  cA <- cAA
-  let eAA = sequential $ getEWithCD <$> parallel cA <*> parallel dA
-  eA <- eAA
-  e <- eA
-  liftEff $ log e
+main :: forall eff. Eff
+  (err :: EXCEPTION , console :: CONSOLE , avar :: AVAR | eff)
+  (Canceler ( console :: CONSOLE , avar :: AVAR | eff))
+main = launchAff $ do
+  aP <- defer' $ getA "a"
+  bP <- defer' $ getB "b"
+  cP <- defer' $ join $ getCWithAB <$> wait aP <*> wait bP
+  dP <- defer' $ join $ getDWithB <$> wait bP
+  eP <- join $ getEWithCD <$> wait cP <*> wait dP
+  pure eP
